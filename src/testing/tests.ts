@@ -1,5 +1,5 @@
-import ExpressServerTest from "./ExpressServerTest"
-import { testGetPosts, testInsertPost } from "./mikroORMTests"
+import ExpressServerTest from "./express-server-test"
+import { testGetPosts, testInsertPost } from "./mikro-orm-tests"
 
 export function runExpressServerTests() {
     const test = new ExpressServerTest()

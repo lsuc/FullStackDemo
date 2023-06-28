@@ -6,6 +6,7 @@ import express from 'express'
 import { buildSchema } from "type-graphql"
 import { HelloResolver } from "./resolvers/HelloResolver"
 import { createHandler } from 'graphql-http/lib/use/express';
+import { PostResolver } from "./resolvers/PostResolver"
 
 console.log("dirname: ", __dirname)
 
@@ -17,9 +18,13 @@ const main = async () => {
     await orm.getMigrator().up();
 
     const graphqlServer = express()
-    const schema = await buildSchema({resolvers: [HelloResolver], validate: false})
+    const schema = await buildSchema({resolvers: [ HelloResolver, PostResolver], validate: false})
     // Create the GraphQL over HTTP Node request handler for express 
-    graphqlServer.all('/graphql', createHandler({ schema }));
+    graphqlServer.all('/graphql', createHandler({ schema, context: {em: orm.em.fork()}}));
+
+    graphqlServer.all('/graphql', createHandler({ schema, 
+        context: () => ({em: orm.em})
+    }));
 
     graphqlServer.listen(4000, ()=>{console.log("server started on localhost:4000")});
 }
