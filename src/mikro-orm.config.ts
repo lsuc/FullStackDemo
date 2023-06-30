@@ -2,7 +2,7 @@ import { __prod__ } from "./constants";
 import { Post } from "./entities/Post";
 import { MikroORM } from "@mikro-orm/core" 
 import path from "path" //node.js import
-
+import { User } from "./entities/User";
 
 const Config : Parameters<typeof MikroORM.init>[0] = { // providing exact parameters type forbids us from defining non-existent property here
     migrations: {
@@ -10,7 +10,7 @@ const Config : Parameters<typeof MikroORM.init>[0] = { // providing exact parame
         pathTs: path.join(__dirname, '../src/migrations'), // path to the folder with TS migrations
         glob: '!(*.d).{js,ts}' // how to match migration files (all .js and .ts files, but not .d.ts)
     },
-    entities: [Post], // corresponds to all our db tables
+    entities: [Post, User], // corresponds to all our db tables
     dbName: 'lireddit', 
     type: "postgresql",
     user: process.env.PG_USER,
