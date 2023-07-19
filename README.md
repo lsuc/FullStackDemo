@@ -1,2 +1,9 @@
 # FullStackDemo
-Typescript React GraphQL project with PostgreSQL and MikroORM
+
+- GraphQL
+- Typescript
+- React
+- Next.js with Chakra UI
+- PostgreSQL
+- Redis
+- MikroORM
