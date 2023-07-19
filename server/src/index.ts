@@ -11,6 +11,7 @@ import RedisStore from "connect-redis"
 import session from "express-session"
 import {createClient} from "redis"
 import { MyContext } from "./types"
+import cors from "cors";
 
 console.log("dirname: ", __dirname)
 
@@ -32,16 +33,16 @@ const main = async () => {
         disableTouch: true
     }) 
 
+    // Create server
     const app = express()
-    /*
-    import cors from "cors";
-    const corsOptions = {
-        origin: process.env.CORS_ORIGIN,
-        credentials: true,
-    };
-      
-    app.use(cors(corsOptions));*/
 
+    // Setup cors
+    const corsOptions = {
+        origin: process.env.CORS_WHITELIST,
+        credentials: true,
+    }
+    app.use(cors(corsOptions));
+  
     // Initialize sesssion storage.
     app.use (
     session({
@@ -58,10 +59,9 @@ const main = async () => {
         }
     })); 
 
+    // Create GraphQL schema and GraphQL over HTTP Node request handler for express 
     const schema = await buildSchema({resolvers: [ HelloResolver, PostResolver, UserResolver], validate: false});
-
-   // Create the GraphQL over HTTP Node request handler for express 
-    app.all('/graphql',  (req, res, next) => {
+    app.all('/graphql', (req, res, next) => {
         const handler = createHandler({schema, context: () : MyContext => {
             return ({ em: orm.em.fork(), req, res })
         }});
