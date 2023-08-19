@@ -3,9 +3,10 @@ import { MyContext } from "../types";
 import { User } from "../entities/User";
 import * as argon2 from "argon2";
 import { UniqueConstraintViolationException } from "@mikro-orm/core";
+//import { EntityManager} from "@mikro-orm/postgresql"
 
 @InputType()
-class UserNamePasswordInput {
+class UsernamePasswordInput {
     @Field()
     username!: string
     @Field()
@@ -28,10 +29,11 @@ class UserResponse {
     user?: User
 }
 
-/*function isErrnoException(e: unknown): e is NodeJS.ErrnoException {
+function isErrnoException(e: unknown): e is NodeJS.ErrnoException {
     if ('code' in (e as any)) return true;
     else return false;
-  }*/
+}
+
 @Resolver()
 export class UserResolver {
 
@@ -48,7 +50,7 @@ export class UserResolver {
 
     @Mutation(()=>UserResponse)
     async register(
-        @Arg('options') options: UserNamePasswordInput,
+        @Arg('options') options: UsernamePasswordInput,
         @Ctx() {em, req}: MyContext
     ): Promise<UserResponse> {
         if (options.username.length < 3)
@@ -61,10 +63,22 @@ export class UserResolver {
         }
         const hashedPass = await argon2.hash(options.password);
         const user = em.create(User, { username: options.username, password: hashedPass});
+        //let user;
         try {
+           /* const result = await (em as EntityManager)
+            .createQueryBuilder(User)
+            .getKnexQuery()
+            .insert({
+                    username: options.username, 
+                    password: hashedPass,
+                    created_at: new Date(),
+                    updated_at: new Date(),
+            })
+            .returning("*");
+            user = result[0]; */
             await em.persistAndFlush(user);
         } catch (err) {
-            if (err instanceof UniqueConstraintViolationException) {
+            if (err instanceof UniqueConstraintViolationException || isErrnoException(err) && err.code === "23505") {
                 console.error("Error code:", err.code);
                 console.error("Error message:", err.message);
                 return { errors: [{field: 'username', message: 'Username already exists'}]};
@@ -81,7 +95,7 @@ export class UserResolver {
 
     @Mutation(()=>UserResponse)
     async login(
-        @Arg('options') options: UserNamePasswordInput,
+        @Arg('options') options: UsernamePasswordInput,
         @Ctx() {em, req}: MyContext
     ) : Promise<UserResponse> {
         const user = await em.findOne(User, { username: options.username});
