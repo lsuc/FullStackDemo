@@ -4,7 +4,7 @@ import { MikroORM } from "@mikro-orm/core"
 import path from "path" //node.js import
 import { User } from "./entities/User";
 
-const Config : Parameters<typeof MikroORM.init>[0] = { // providing exact parameters type forbids us from defining non-existent property here
+export default { // providing exact parameters type forbids us from defining non-existent property here
     migrations: {
         path: path.join(__dirname, './migrations'), // path to the folder with js migrations
         pathTs: path.join(__dirname, '../src/migrations'), // path to the folder with TS migrations
@@ -16,6 +16,4 @@ const Config : Parameters<typeof MikroORM.init>[0] = { // providing exact parame
     user: process.env.PG_USER,
     password: process.env.PG_PASS,
     debug: !__prod__ , // debug true when not in production,
-}  
-
-export default Config;
+}  as Parameters<typeof MikroORM.init>[0];
