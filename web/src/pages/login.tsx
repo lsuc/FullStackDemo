@@ -5,7 +5,7 @@ import { Box, Button } from "@chakra-ui/react";
 import { useMutation } from "urql";
 import { LoginDocument } from "../generated/graphql";
 import { toErrorMap } from "../utils/toErrorMap";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 
 const Login = () => {
   const router = useRouter();
@@ -15,7 +15,6 @@ const Login = () => {
       <Formik
         initialValues={{ username: "", password: "" }}
         onSubmit={async (values, { setErrors }) => {
-          console.log(values);
           const response = await login({ options: values });
           if (response.data?.login.errors) {
             console.log(response);
