@@ -12,6 +12,7 @@ import { MyContext } from "../types";
 import { User } from "../entities/User";
 import * as argon2 from "argon2";
 import { UniqueConstraintViolationException } from "@mikro-orm/core";
+import { COOKIE_NAME } from "../constants";
 
 @InputType()
 class UsernamePasswordInput {
@@ -144,5 +145,21 @@ export class UserResolver {
     req.session.userId = user.id;
     console.log(req.session.userId);
     return { user };
+  }
+
+  @Mutation(() => Boolean)
+  logout(@Ctx() { req, res }: MyContext) {
+    return new Promise((resolve) =>
+      // destroy session in redis
+      req.session.destroy((err) => {
+        res.clearCookie(COOKIE_NAME); // clear the cookie
+        if (err) {
+          console.log(err);
+          resolve(false);
+          return;
+        }
+        resolve(true);
+      }),
+    );
   }
 }
