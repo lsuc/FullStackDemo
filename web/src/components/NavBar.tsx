@@ -1,4 +1,4 @@
-import { Box, Button, Flex, Link } from "@chakra-ui/react";
+import { Box, Button, Flex, Link as ChakraLink } from "@chakra-ui/react";
 import NextLink from "next/link";
 import { useMutation, useQuery } from "urql";
 import { MeDocument, LogoutDocument } from "../generated/graphql";
@@ -14,14 +14,12 @@ const NavBar = () => {
   } else if (!data?.me) {
     body = (
       <>
-        <NextLink href="/login">
-          <Link color="white" mr={2}>
-            login
-          </Link>
-        </NextLink>
-        <NextLink href="/register">
-          <Link color="white">register</Link>
-        </NextLink>
+        <ChakraLink as={NextLink} href="/login" color="white" mr={2}>
+          login
+        </ChakraLink>
+        <ChakraLink href="/register" color="white">
+          register
+        </ChakraLink>
       </>
     );
     // user logged in
