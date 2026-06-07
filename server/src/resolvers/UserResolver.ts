@@ -14,6 +14,7 @@ import { UniqueConstraintViolationException } from "@mikro-orm/core";
 import { COOKIE_NAME } from "../constants";
 import { UsernamePasswordInput } from "../utils/UsernamePasswordInput";
 import { validateRegister } from "../utils/validateRegister";
+import { sendEmail } from "../utils/sendEmail";
 
 @ObjectType()
 class FieldError {
@@ -38,11 +39,21 @@ function isErrnoException(e: unknown): e is NodeJS.ErrnoException {
 
 @Resolver()
 export class UserResolver {
-  /* @Mutation(() => Boolean)
+  @Mutation(() => Boolean)
   async forgotPassword(@Arg("email") email: string, @Ctx() { em }: MyContext) {
-    //const user = await em.findOne(User, {email})
+    const user = await em.findOne(User, { email });
+    if (!user) {
+      // the email is not in the database
+      return true;
+    }
+    const token = "dweidrweo8932uidehwq232";
+
+    sendEmail(
+      email,
+      `<a href="http://localhost:3000/change-password/${token}">Reset password</a>`,
+    );
     return true;
-  }*/
+  }
 
   @Query(() => User, { nullable: true })
   async me(@Ctx() { em, req }: MyContext) {

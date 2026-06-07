@@ -9,7 +9,7 @@ import { UserResolver } from "./resolvers/UserResolver";
 import { createHandler } from "graphql-http/lib/use/express";
 import { MyContext } from "./types";
 import RedisStore from "connect-redis";
-import { createClient } from "redis";
+import Redis from "ioredis";
 import session from "express-session";
 import cors from "cors";
 
@@ -22,12 +22,12 @@ const main = async () => {
   await orm.getMigrator().up();
 
   // Initialize redis client.
-  let redisClient = createClient();
-  redisClient.connect().catch(console.error);
+  const redis = new Redis();
+  redis.connect().catch(console.error);
 
   // Initialize store.
   let redisStore = new RedisStore({
-    client: redisClient,
+    client: redis,
     prefix: "myapp:",
     disableTouch: true,
   });
@@ -68,7 +68,7 @@ const main = async () => {
     const handler = createHandler({
       schema,
       context: (): MyContext => {
-        return { em: orm.em.fork(), req, res };
+        return { em: orm.em.fork(), req, res, redis };
       },
     });
     handler(req, res, next);
