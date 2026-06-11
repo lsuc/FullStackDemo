@@ -33,14 +33,14 @@ const NavBar = () => {
   } else if (!data?.me) {
     // user not logged in
     body = (
-      <>
+      <Flex>
         <ChakraLink as={NextLink} href="/login" color="white" mr={2}>
-          login
+          Log in
         </ChakraLink>
-        <ChakraLink href="/register" color="white">
-          register
+        <ChakraLink as={NextLink} ml={2} href="/register" color="white">
+          Register
         </ChakraLink>
-      </>
+      </Flex>
     );
   } else {
     // user logged in
