@@ -1,23 +1,23 @@
 import { Form, Formik } from "formik";
 import Wrapper from "../components/Wrapper";
 import InputField from "../components/InputField";
-import { Box, Button } from "@chakra-ui/react";
+import { Box, Button, Link as ChakraLink, Flex } from "@chakra-ui/react";
 import { useMutation } from "urql";
 import { LoginDocument } from "../generated/graphql";
 import { toErrorMap } from "../utils/toErrorMap";
 import { useRouter } from "next/navigation";
 import { withUrqlClient } from "next-urql";
 import { createUrqlClient } from "../utils/createUrqlClient";
-
+import NextLink from "next/link";
 const Login = () => {
   const router = useRouter();
   const [, login] = useMutation(LoginDocument);
   return (
     <Wrapper variant="small">
       <Formik
-        initialValues={{ username: "", password: "" }}
+        initialValues={{ usernameOrEmail: "", password: "" }}
         onSubmit={async (values, { setErrors }) => {
-          const response = await login({ options: values });
+          const response = await login(values);
           if (response.data?.login.errors) {
             console.log(response);
             setErrors(toErrorMap(response.data.login.errors));
@@ -30,9 +30,9 @@ const Login = () => {
         {({ isSubmitting }) => (
           <Form>
             <InputField
-              name="username"
-              label="Username"
-              placeholder="username"
+              name="usernameOrEmail"
+              label="Username or Email"
+              placeholder="username or email"
             />
             <Box mt={4}>
               <InputField
@@ -42,13 +42,23 @@ const Login = () => {
                 type="password"
               />
             </Box>
+            <Flex>
+              <ChakraLink
+                as={NextLink}
+                ml="auto"
+                mt={2}
+                href="/forgot-password"
+              >
+                Forgot your password?
+              </ChakraLink>
+            </Flex>
             <Button
               mt={4}
               type="submit"
               isLoading={isSubmitting}
               colorScheme="teal"
             >
-              Login
+              Log in
             </Button>
           </Form>
         )}
