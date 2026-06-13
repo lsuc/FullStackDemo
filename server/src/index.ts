@@ -23,7 +23,6 @@ const main = async () => {
 
   // Initialize redis client.
   const redis = new Redis();
-  redis.connect().catch(console.error);
 
   // Initialize store.
   let redisStore = new RedisStore({
