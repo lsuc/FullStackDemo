@@ -1,23 +1,31 @@
-import { Entity, PrimaryKey, Property } from "@mikro-orm/core";
 import { Field, ObjectType } from "type-graphql";
+import {
+  BaseEntity,
+  Column,
+  CreateDateColumn,
+  Entity,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from "typeorm";
 
 @ObjectType() // Convert entity to a graphQL type, so graphql can work with it directly
 @Entity()
-export class Post {
+export class Post extends BaseEntity {
+  // Allows Post.find(), Post.insert(), etc.
   @Field()
-  @PrimaryKey()
+  @PrimaryGeneratedColumn()
   id!: number;
 
-  @Field()
-  @Property({ type: "date" })
-  createdAt?: Date = new Date();
+  @Field(() => String)
+  @CreateDateColumn()
+  createdAt?: Date;
+
+  @Field(() => String)
+  @UpdateDateColumn()
+  updatedAt?: Date;
 
   @Field()
-  @Property({ type: "date", onUpdate: () => new Date() }) // In my Migrations I got the wrong type here also
-  updatedAt?: Date = new Date();
-
-  @Field()
-  @Property({ type: "text" }) // In my Migrations I got varchar[255] type column, but I want it longer so I want to specify type here
+  @Column()
   title!: string;
 
   fieldInTheClass?: string =

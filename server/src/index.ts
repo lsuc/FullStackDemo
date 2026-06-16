@@ -1,6 +1,5 @@
-import { MikroORM } from "@mikro-orm/core";
+import "reflect-metadata";
 import { __prod__, COOKIE_NAME } from "./constants";
-import mikroconfig from "./mikro-orm.config";
 import express from "express";
 import { buildSchema } from "type-graphql";
 import { HelloResolver } from "./resolvers/HelloResolver";
@@ -12,14 +11,27 @@ import RedisStore from "connect-redis";
 import Redis from "ioredis";
 import session from "express-session";
 import cors from "cors";
+import { DataSource } from "typeorm";
+import { User } from "./entities/User";
+import { Post } from "./entities/Post";
 
 console.log("dirname: ", __dirname);
 
 const main = async () => {
-  const orm = await MikroORM.init(mikroconfig);
-
+  const dataSource = new DataSource({
+    type: "postgres",
+    host: "localhost",
+    port: 5432,
+    username: process.env.PG_USER,
+    password: process.env.PG_PASS,
+    database: "lireddit2",
+    entities: [User, Post],
+    synchronize: true, // no need to run a migration
+    logging: true,
+  });
+  await dataSource.initialize();
   // run migration automatically on startup
-  await orm.getMigrator().up();
+  //await orm.runMigrations();
 
   // Initialize redis client.
   const redis = new Redis();
@@ -67,7 +79,7 @@ const main = async () => {
     const handler = createHandler({
       schema,
       context: (): MyContext => {
-        return { em: orm.em.fork(), req, res, redis };
+        return { req, res, redis, dataSource };
       },
     });
     handler(req, res, next);
