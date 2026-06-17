@@ -5,10 +5,11 @@ import { Box, Button, Link as ChakraLink, Flex } from "@chakra-ui/react";
 import { useMutation } from "urql";
 import { LoginDocument } from "../generated/graphql";
 import { toErrorMap } from "../utils/toErrorMap";
-import { useRouter } from "next/navigation";
+import { useRouter } from "next/router";
 import { withUrqlClient } from "next-urql";
 import { createUrqlClient } from "../utils/createUrqlClient";
 import NextLink from "next/link";
+
 const Login = () => {
   const router = useRouter();
   const [, login] = useMutation(LoginDocument);
@@ -23,7 +24,9 @@ const Login = () => {
             setErrors(toErrorMap(response.data.login.errors));
           } else if (response.data?.login.user) {
             // successful login
-            router.push("/");
+            const next =
+              typeof router.query.next === "string" ? router.query.next : "/";
+            router.push(next);
           }
         }}
       >
