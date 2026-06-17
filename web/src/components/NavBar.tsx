@@ -61,7 +61,7 @@ const NavBar = () => {
   }
 
   return (
-    <Flex bg="tan" p={4}>
+    <Flex zIndex={1} bg="tan" position="sticky" top={0} p={4}>
       <Box ml={"auto"}>{body}</Box>
     </Flex>
   );
