@@ -7,7 +7,12 @@ import { Link as ChakraLink } from "@chakra-ui/react";
 import NextLink from "next/link";
 
 const Index = () => {
-  const [{ data }] = useQuery({ query: PostsDocument });
+  const [{ data }] = useQuery({
+    query: PostsDocument,
+    variables: {
+      limit: 10,
+    },
+  });
   return (
     <Layout>
       <ChakraLink as={NextLink} ml="auto" mt={2} href="/create-post">

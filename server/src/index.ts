@@ -14,6 +14,7 @@ import cors from "cors";
 import { DataSource } from "typeorm";
 import { User } from "./entities/User";
 import { Post } from "./entities/Post";
+import path from "path";
 
 console.log("dirname: ", __dirname);
 
@@ -26,12 +27,14 @@ const main = async () => {
     password: process.env.PG_PASS,
     database: "lireddit2",
     entities: [User, Post],
+    migrations: [path.join(__dirname, "./migrations/*")],
     synchronize: true, // no need to run a migration
     logging: true,
   });
+
   await dataSource.initialize();
   // run migration automatically on startup
-  //await orm.runMigrations();
+  await dataSource.runMigrations();
 
   // Initialize redis client.
   const redis = new Redis();
