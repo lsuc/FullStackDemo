@@ -3,7 +3,13 @@ import { createUrqlClient } from "../utils/createUrqlClient";
 import { PostsDocument } from "../generated/graphql";
 import { useQuery } from "urql";
 import Layout from "../components/Layout";
-import { Link as ChakraLink } from "@chakra-ui/react";
+import {
+  Box,
+  Link as ChakraLink,
+  Heading,
+  Stack,
+  Text,
+} from "@chakra-ui/react";
 import NextLink from "next/link";
 
 const Index = () => {
@@ -23,7 +29,14 @@ const Index = () => {
       {!data ? (
         <div>loading...</div>
       ) : (
-        data.posts.map((p) => <div key={p.id}>{p.title}</div>)
+        <Stack spacing={8}>
+          {data.posts.map((p) => (
+            <Box key={p.id} p={5} shadow="md" borderWidth="1px">
+              <Heading fontSize="xl">{p.title}</Heading>
+              <Text mt={4}>{p.text.slice(0, 200)}</Text>
+            </Box>
+          ))}
+        </Stack>
       )}
     </Layout>
   );
