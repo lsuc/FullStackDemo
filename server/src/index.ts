@@ -33,8 +33,12 @@ const main = async () => {
   });
 
   await dataSource.initialize();
-  // run migration automatically on startup
+
+  // Run migration automatically on startup
   await dataSource.runMigrations();
+
+  // Manually clear database
+  // await Post.clear();
 
   // Initialize redis client.
   const redis = new Redis();

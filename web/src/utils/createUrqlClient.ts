@@ -12,6 +12,7 @@ import { betterUpdateQuery } from "../utils/betterUpdateQuery";
 import { pipe, tap } from "wonka";
 import { Exchange } from "urql";
 import Router from "next/router";
+import { cursorPagination } from "./cursorPagination";
 
 export const errorExchange: Exchange =
   ({ forward }) =>
@@ -33,6 +34,17 @@ export const createUrqlClient = (ssrExchange: any) => ({
   },
   exchanges: [
     cacheExchange({
+      resolvers: {
+        //         Keys are needed to fix the warning: Invalid key: The GraphQL query at the field at `Query.posts({"limit":10})` has a selection set, but no key could be generated for the data at this field.
+        //         You have to request `id` or `_id` fields for all selection sets or create a custom `keys` config for `PaginatedPosts`.
+        //          Entities without keys will be embedded directly on the parent entity. If this is intentional, create a `keys` config for `PaginatedPosts` that always returns null.
+        keys: {
+          PaginatedPosts: () => null,
+        },
+        Query: {
+          posts: cursorPagination(),
+        },
+      },
       updates: {
         Mutation: {
           logout: (_result, args, cache, info) => {
