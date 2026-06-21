@@ -54,7 +54,7 @@ const NavBar = () => {
           isLoading={logoutFetching}
           variant="link"
         >
-          logout
+          Log out
         </Button>
       </Flex>
     );
