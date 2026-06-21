@@ -15,6 +15,7 @@ import { DataSource } from "typeorm";
 import { User } from "./entities/User";
 import { Post } from "./entities/Post";
 import path from "path";
+import { Upvote } from "./entities/Upvote";
 
 console.log("dirname: ", __dirname);
 
@@ -26,7 +27,7 @@ const main = async () => {
     username: process.env.PG_USER,
     password: process.env.PG_PASS,
     database: "lireddit2",
-    entities: [User, Post],
+    entities: [User, Post, Upvote],
     migrations: [path.join(__dirname, "./migrations/*")],
     synchronize: true, // no need to run a migration
     logging: true,

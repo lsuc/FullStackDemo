@@ -5,10 +5,12 @@ import {
   CreateDateColumn,
   Entity,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from "typeorm";
 import { User } from "./User";
+import { Upvote } from "./Upvote";
 
 @ObjectType() // Convert entity to a graphQL type, so graphql can work with it directly
 @Entity()
@@ -34,8 +36,12 @@ export class Post extends BaseEntity {
   @Column()
   creatorId?: number;
 
+  @Field({ nullable: true })
   @ManyToOne(() => User, (user) => user.posts)
   creator?: User;
+
+  @OneToMany(() => Upvote, (upvote) => upvote.post)
+  upvotes?: Upvote[];
 
   @Field(() => String)
   @CreateDateColumn()
