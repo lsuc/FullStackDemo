@@ -15,7 +15,6 @@ import {
 import { Post } from "../entities/Post";
 import { MyContext } from "../types";
 import { isAuth } from "../middleware/isAuth";
-import { Upvote } from "../entities/Upvote";
 
 @InputType()
 class PostInput {
@@ -53,14 +52,14 @@ export class PostResolver {
 
     await dataSource.query(
       `
-      START_TRANSACTION;
+      BEGIN;
       
-      insert into upvote ("userId", "postId", "value")
+      INSERT INTO upvote ("userId", "postId", "value")
       values(${userId}, ${postId}, ${realValue});
       
-      update post
-      set points = points + ${realValue}
-      where id = ${postId};
+      UPDATE post
+      SET points = points + ${realValue}
+      WHERE id = ${postId};
       COMMIT;
       `,
     );
