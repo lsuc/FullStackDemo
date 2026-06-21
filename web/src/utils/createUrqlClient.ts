@@ -6,6 +6,8 @@ import {
   MeDocument,
   LoginMutation,
   RegisterMutation,
+  CreatePostMutation,
+  PostsQuery,
 } from "../generated/graphql";
 import { betterUpdateQuery } from "../utils/betterUpdateQuery";
 
@@ -47,6 +49,15 @@ export const createUrqlClient = (ssrExchange: any) => ({
       },
       updates: {
         Mutation: {
+          createPost: (_result, args, cache) => {
+            cache
+              .inspectFields("Query")
+              .filter((field) => field.fieldName === "posts")
+              .forEach((field) => {
+                // Invalidate all cached pagination results on post creation
+                cache.invalidate("Query", "posts", field.arguments);
+              });
+          },
           logout: (_result, args, cache, info) => {
             // me query should return null
             betterUpdateQuery<LogoutMutation, MeQuery>(
