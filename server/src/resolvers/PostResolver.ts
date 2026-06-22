@@ -15,6 +15,7 @@ import {
 import { Post } from "../entities/Post";
 import { MyContext } from "../types";
 import { isAuth } from "../middleware/isAuth";
+import { Upvote } from "../entities/Upvote";
 
 @InputType()
 class PostInput {
@@ -39,24 +40,111 @@ export class PostResolver {
     return root.text.slice(0, 100);
   }
 
+  @Mutation(() => Boolean)
+  @UseMiddleware(isAuth)
+  async vote(
+    @Arg("postId", () => Int) postId: number,
+    @Arg("value", () => Int) value: number,
+    @Ctx() { req, dataSource }: MyContext,
+  ): Promise<boolean> {
+    const isUpvote = value > 0;
+    const realValue = isUpvote ? 1 : -1;
+    const { userId } = req.session;
+    const upvote = await Upvote.findOne({ where: { postId, userId } });
+
+    // The user has voted on the post before
+    if (upvote && upvote.value !== realValue) {
+      await dataSource.transaction(async (tm) => {
+        await tm.query(
+          `
+          UPDATE upvote
+          SET value = $1
+          WHERE "postId" = $2 AND "userId" = $3
+          `,
+          [realValue, postId, userId],
+        );
+
+        await tm.query(
+          `
+          UPDATE post
+          SET points = points + $1
+          WHERE id = $2
+          `,
+          [2 * realValue, postId],
+        );
+      });
+    } else if (!upvote) {
+      // Has never voted before
+      await dataSource.transaction(async (tm) => {
+        await tm.query(
+          `
+          INSERT INTO upvote ("userId", "postId", "value")
+          values($1, $2, $3);
+          `,
+          [userId, postId, realValue],
+        );
+        await tm.query(
+          `
+          UPDATE post
+          SET points = points + $1
+          WHERE id = $2
+          `,
+          [realValue, postId],
+        );
+      });
+    }
+
+    return true;
+  }
+
   @Query(() => PaginatedPosts)
   async posts(
     @Arg("limit", () => Int) limit: number,
     @Arg("cursor", () => String, { nullable: true }) cursor: string | null,
-    @Ctx() { dataSource }: MyContext,
+    @Ctx() { req, dataSource }: MyContext,
   ): Promise<PaginatedPosts> {
     //await sleep(3000);
     const realLimit = Math.min(50, limit);
     const realLimitPlusOne = realLimit + 1;
-    const qb = dataSource
-      .getRepository(Post)
-      .createQueryBuilder("p")
-      .orderBy('"createdAt"', "DESC") // get newest posts first
-      .take(realLimitPlusOne);
-    if (cursor) {
-      qb.where('"createdAt" < :cursor', { cursor: new Date(parseInt(cursor)) });
+
+    const replacements: any[] = [realLimitPlusOne];
+    let userIdIdx: number | null = null;
+    let cursorIdx: number | null = null;
+
+    if (req.session.userId) {
+      replacements.push(req.session.userId);
+      userIdIdx = replacements.length;
     }
-    const posts = await qb.getMany();
+
+    if (cursor) {
+      replacements.push(new Date(parseInt(cursor)));
+      cursorIdx = replacements.length;
+    }
+
+    const posts = await dataSource.query(
+      `
+      select p.*, 
+      json_build_object(
+      'id', u.id,
+      'username', u.username,
+      'email', u.email,
+      'createdAt', u."createdAt",
+      'updatedAt', u."updatedAt"
+      ) creator,
+      ${
+        userIdIdx
+          ? `(select value from upvote where "userId"=$${userIdIdx} and "postId"=p.id) "voteStatus"`
+          : 'null as "voteStatus"'
+      }
+      from post p
+      inner join public.user u on u.id = p."creatorId"
+      ${cursorIdx ? `where p."createdAt" < $${cursorIdx}` : ""}
+      order by p."createdAt" DESC
+      limit $1
+      `,
+      replacements,
+    );
+
     return {
       posts: posts.slice(0, realLimit),
       hasMore: posts.length === realLimitPlusOne,
