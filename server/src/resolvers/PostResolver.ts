@@ -101,15 +101,24 @@ export class PostResolver {
   async posts(
     @Arg("limit", () => Int) limit: number,
     @Arg("cursor", () => String, { nullable: true }) cursor: string | null,
-    @Ctx() { dataSource }: MyContext,
+    @Ctx() { req, dataSource }: MyContext,
   ): Promise<PaginatedPosts> {
     //await sleep(3000);
     const realLimit = Math.min(50, limit);
     const realLimitPlusOne = realLimit + 1;
 
     const replacements: any[] = [realLimitPlusOne];
+    let userIdIdx: number | null = null;
+    let cursorIdx: number | null = null;
+
+    if (req.session.userId) {
+      replacements.push(req.session.userId);
+      userIdIdx = replacements.length;
+    }
+
     if (cursor) {
       replacements.push(new Date(parseInt(cursor)));
+      cursorIdx = replacements.length;
     }
 
     const posts = await dataSource.query(
@@ -121,28 +130,21 @@ export class PostResolver {
       'email', u.email,
       'createdAt', u."createdAt",
       'updatedAt', u."updatedAt"
-      ) creator
+      ) creator,
+      ${
+        userIdIdx
+          ? `(select value from upvote where "userId"=$${userIdIdx} and "postId"=p.id) "voteStatus"`
+          : 'null as "voteStatus"'
+      }
       from post p
       inner join public.user u on u.id = p."creatorId"
-      ${cursor ? `where p."createdAt" < $2` : ""}
+      ${cursorIdx ? `where p."createdAt" < $${cursorIdx}` : ""}
       order by p."createdAt" DESC
       limit $1
       `,
       replacements,
     );
 
-    // const qb = dataSource
-    //   .getRepository(Post)
-    //   .createQueryBuilder("p")
-    //   //.innerJoinAndSelect("p.creator", "creator")
-    //   .orderBy('p."createdAt"', "DESC") // get newest posts first
-    //   .take(realLimitPlusOne);
-    // if (cursor) {
-    //   qb.andWhere('p."createdAt" < :cursor', {
-    //     cursor: new Date(parseInt(cursor)),
-    //   });
-    // }
-    //const posts = await qb.getMany();
     return {
       posts: posts.slice(0, realLimit),
       hasMore: posts.length === realLimitPlusOne,

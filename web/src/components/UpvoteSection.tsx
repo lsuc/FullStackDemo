@@ -15,7 +15,10 @@ const UpvoteSection = ({ post }: UpvoteSectionProps) => {
     <Flex direction="column" align="center" width="40px" mr={4}>
       <IconButton
         icon={<BsChevronUp />}
+        bgColor={post.voteStatus === 1 ? "green.400" : undefined}
+        textColor={post.voteStatus === 1 ? "white" : undefined}
         onClick={async () => {
+          if (post.voteStatus === 1) return;
           setLoadingState("upvote-loading");
           await vote({ postId: post.id, value: 1 });
           setLoadingState("not-loading");
@@ -27,7 +30,10 @@ const UpvoteSection = ({ post }: UpvoteSectionProps) => {
       <Box>{post.points}</Box>
       <IconButton
         icon={<BsChevronDown />}
+        bgColor={post.voteStatus === -1 ? "red.400" : undefined}
+        textColor={post.voteStatus === -1 ? "white" : undefined}
         onClick={async () => {
+          if (post.voteStatus === -1) return;
           setLoadingState("downvote-loading");
           await vote({ postId: post.id, value: -1 });
           setLoadingState("not-loading");
