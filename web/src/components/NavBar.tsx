@@ -1,4 +1,10 @@
-import { Box, Button, Flex, Link as ChakraLink } from "@chakra-ui/react";
+import {
+  Box,
+  Button,
+  Flex,
+  Link as ChakraLink,
+  Heading,
+} from "@chakra-ui/react";
 import NextLink from "next/link";
 import { useMutation, useQuery } from "urql";
 import { MeDocument, LogoutDocument } from "../generated/graphql";
@@ -43,7 +49,10 @@ const NavBar = () => {
   } else {
     // user logged in
     body = (
-      <Flex>
+      <Flex align="center">
+        <Button as={NextLink} mr={2} href="/create-post">
+          Create post
+        </Button>
         <Box mr={2}>{data.me.username}</Box>
         <Button
           onClick={() => {
@@ -59,7 +68,10 @@ const NavBar = () => {
   }
 
   return (
-    <Flex zIndex={1} bg="tan" position="sticky" top={0} p={4}>
+    <Flex zIndex={1} bg="tan" position="sticky" top={0} p={4} align="center">
+      <ChakraLink as={NextLink} href="/">
+        <Heading>LiReddit</Heading>
+      </ChakraLink>
       <Box ml={"auto"}>{body}</Box>
     </Flex>
   );
