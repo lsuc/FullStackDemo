@@ -49,7 +49,7 @@ export type MutationCreatePostArgs = {
 
 
 export type MutationDeletePostArgs = {
-  id: Scalars['Float']['input'];
+  id: Scalars['Int']['input'];
 };
 
 

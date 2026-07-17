@@ -8,12 +8,14 @@ import {
   Link as ChakraLink,
   Flex,
   Heading,
+  IconButton,
   Stack,
   Text,
 } from "@chakra-ui/react";
 import NextLink from "next/link";
 import { useState } from "react";
 import UpvoteSection from "../components/UpvoteSection";
+import { BsTrash } from "react-icons/bs";
 
 const Index = () => {
   const [variables, setVariables] = useState({
@@ -41,7 +43,7 @@ const Index = () => {
               <Flex direction="column" align="center" width="40px" mr={4}>
                 <UpvoteSection post={p} />
               </Flex>
-              <Box>
+              <Box flex={1}>
                 <ChakraLink
                   as={NextLink}
                   ml="auto"
@@ -51,7 +53,18 @@ const Index = () => {
                   <Heading fontSize="xl">{p.title}</Heading>
                 </ChakraLink>
                 <Text>Posted by {p.creator?.username}</Text>
-                <Text mt={4}>{p.textSnippet}</Text>
+                <Flex align="center">
+                  <Text flex={1} mt={4}>
+                    {p.textSnippet}
+                  </Text>
+                  <IconButton
+                    ml="auto"
+                    textColor="red.500"
+                    icon={<BsTrash />}
+                    aria-label="Delete post"
+                    onClick={() => {}}
+                  />
+                </Flex>
               </Box>
             </Flex>
           ))}
