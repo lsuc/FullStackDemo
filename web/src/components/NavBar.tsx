@@ -50,7 +50,7 @@ const NavBar = () => {
     // user logged in
     body = (
       <Flex align="center">
-        <Button as={NextLink} mr={2} href="/create-post">
+        <Button as={NextLink} mr={4} href="/create-post">
           Create post
         </Button>
         <Box mr={2}>{data.me.username}</Box>
@@ -69,10 +69,12 @@ const NavBar = () => {
 
   return (
     <Flex zIndex={1} bg="tan" position="sticky" top={0} p={4} align="center">
-      <ChakraLink as={NextLink} href="/">
-        <Heading>LiReddit</Heading>
-      </ChakraLink>
-      <Box ml={"auto"}>{body}</Box>
+      <Flex flex={1} m="auto" align="center" maxW={800}>
+        <ChakraLink as={NextLink} href="/">
+          <Heading>LiReddit</Heading>
+        </ChakraLink>
+        <Box ml={"auto"}>{body}</Box>
+      </Flex>
     </Flex>
   );
 };
