@@ -32,13 +32,6 @@ const Index = () => {
   }
   return (
     <Layout>
-      <Flex align="center">
-        <Heading>LiReddit</Heading>
-        <ChakraLink as={NextLink} ml="auto" mt={2} href="/create-post">
-          Create post
-        </ChakraLink>
-      </Flex>
-      <br />
       {!data && fetching ? (
         <div>loading...</div>
       ) : (
@@ -49,7 +42,14 @@ const Index = () => {
                 <UpvoteSection post={p} />
               </Flex>
               <Box>
-                <Heading fontSize="xl">{p.title}</Heading>
+                <ChakraLink
+                  as={NextLink}
+                  ml="auto"
+                  mt={2}
+                  href={`/post/${p.id}`}
+                >
+                  <Heading fontSize="xl">{p.title}</Heading>
+                </ChakraLink>
                 <Text>Posted by {p.creator?.username}</Text>
                 <Text mt={4}>{p.textSnippet}</Text>
               </Box>
