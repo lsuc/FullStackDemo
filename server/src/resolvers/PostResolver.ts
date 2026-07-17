@@ -206,13 +206,13 @@ export class PostResolver {
         id,
       },
     });
-    if (!post) {
-      return false;
-    }
-    if (post?.creatorId !== req.session.userId) {
-      throw new Error("Not authorized");
-    }
-    await Upvote.delete({ postId: id });
+    // if (!post) {
+    //   return false;
+    // }
+    // if (post?.creatorId !== req.session.userId) {
+    //   throw new Error("Not authorized");
+    // }
+    // await Upvote.delete({ postId: id });
     await Post.delete({ id, creatorId: req.session.userId });
     return true;
   }
