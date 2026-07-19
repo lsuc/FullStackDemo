@@ -1,6 +1,10 @@
 import { withUrqlClient } from "next-urql";
 import { createUrqlClient } from "../utils/createUrqlClient";
-import { useDeletePostMutation, usePostsQuery } from "../generated/graphql";
+import {
+  useDeletePostMutation,
+  useMeQuery,
+  usePostsQuery,
+} from "../generated/graphql";
 import Layout from "../components/Layout";
 import {
   Box,
@@ -15,13 +19,15 @@ import {
 import NextLink from "next/link";
 import { useState } from "react";
 import UpvoteSection from "../components/UpvoteSection";
-import { BsTrash } from "react-icons/bs";
+import { BsTrash, BsPencilSquare } from "react-icons/bs";
 
 const Index = () => {
   const [variables, setVariables] = useState({
     limit: 20,
     cursor: null as null | string,
   });
+
+  const [{ data: meData }] = useMeQuery();
   const [{ data, fetching }] = usePostsQuery({
     variables: {
       limit: variables.limit,
@@ -59,15 +65,28 @@ const Index = () => {
                     <Text flex={1} mt={4}>
                       {p.textSnippet}
                     </Text>
-                    <IconButton
-                      ml="auto"
-                      textColor="red.500"
-                      icon={<BsTrash />}
-                      aria-label="Delete post"
-                      onClick={() => {
-                        deletePost({ id: p.id });
-                      }}
-                    />
+                    {meData?.me?.id !== p.creator?.id ? null : (
+                      <Box ml="auto">
+                        <IconButton
+                          as={NextLink}
+                          href={`/post/edit/${p.id}`}
+                          ml="auto"
+                          mr={4}
+                          textColor="blue.500"
+                          icon={<BsPencilSquare />}
+                          aria-label="Edit post"
+                        />
+                        <IconButton
+                          ml="auto"
+                          textColor="red.500"
+                          icon={<BsTrash />}
+                          aria-label="Delete post"
+                          onClick={() => {
+                            deletePost({ id: p.id });
+                          }}
+                        />
+                      </Box>
+                    )}
                   </Flex>
                 </Box>
               </Flex>
