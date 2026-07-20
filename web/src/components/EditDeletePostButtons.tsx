@@ -6,7 +6,7 @@ import { useDeletePostMutation, useMeQuery } from "../generated/graphql";
 
 interface EditDeletePostButtonsProps {
   id: number;
-  creatorId: number | undefined;
+  creatorId: number;
 }
 
 const EditDeletePostButtons = ({
@@ -15,7 +15,7 @@ const EditDeletePostButtons = ({
 }: EditDeletePostButtonsProps) => {
   const [{ data: meData }] = useMeQuery();
   const [, deletePost] = useDeletePostMutation();
-  if (!creatorId || meData?.me?.id !== creatorId) {
+  if (meData?.me?.id !== creatorId) {
     return null;
   }
   return (

@@ -22,7 +22,7 @@ const Index = () => {
     cursor: null as null | string,
   });
 
-  const [{ data, fetching }] = usePostsQuery({
+  const [{ data, error, fetching }] = usePostsQuery({
     variables: {
       limit: variables.limit,
       cursor: variables.cursor,
@@ -30,8 +30,14 @@ const Index = () => {
   });
 
   if (!fetching && !data) {
-    return <div>Couldn't fetch any posts to show.</div>;
+    return (
+      <div>
+        <div>Couldn't fetch any posts to show.</div>
+        <div>{error?.message}</div>
+      </div>
+    );
   }
+
   return (
     <Layout>
       {!data && fetching ? (
@@ -61,7 +67,7 @@ const Index = () => {
                     <Box ml="auto">
                       <EditDeletePostButtons
                         id={p.id}
-                        creatorId={p.creator?.id}
+                        creatorId={p.creator.id}
                       />
                     </Box>
                   </Flex>
