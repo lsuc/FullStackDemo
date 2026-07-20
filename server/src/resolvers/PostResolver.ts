@@ -37,17 +37,13 @@ class PaginatedPosts {
 @Resolver(Post)
 export class PostResolver {
   @FieldResolver(() => String)
-  textSnippet(@Root() root: Post) {
-    return root.text.slice(0, 100);
+  textSnippet(@Root() post: Post) {
+    return post.text.slice(0, 100);
   }
 
   @FieldResolver(() => User)
-  creator(@Root() post: Post) {
-    return User.findOne({
-      where: {
-        id: post.creatorId,
-      },
-    });
+  creator(@Root() post: Post, @Ctx() { userLoader }: MyContext) {
+    return userLoader.load(post.creatorId);
   }
 
   @Mutation(() => Boolean)
