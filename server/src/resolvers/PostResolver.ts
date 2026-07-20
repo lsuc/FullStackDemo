@@ -16,6 +16,7 @@ import { Post } from "../entities/Post";
 import { MyContext } from "../types";
 import { isAuth } from "../middleware/isAuth";
 import { Upvote } from "../entities/Upvote";
+import { User } from "../entities/User";
 
 @InputType()
 class PostInput {
@@ -38,6 +39,15 @@ export class PostResolver {
   @FieldResolver(() => String)
   textSnippet(@Root() root: Post) {
     return root.text.slice(0, 100);
+  }
+
+  @FieldResolver(() => User)
+  creator(@Root() post: Post) {
+    return User.findOne({
+      where: {
+        id: post.creatorId,
+      },
+    });
   }
 
   @Mutation(() => Boolean)
@@ -124,20 +134,12 @@ export class PostResolver {
     const posts = await dataSource.query(
       `
       select p.*, 
-      json_build_object(
-      'id', u.id,
-      'username', u.username,
-      'email', u.email,
-      'createdAt', u."createdAt",
-      'updatedAt', u."updatedAt"
-      ) creator,
       ${
         userIdIdx
           ? `(select value from upvote where "userId"=$${userIdIdx} and "postId"=p.id) "voteStatus"`
           : 'null as "voteStatus"'
       }
       from post p
-      inner join public.user u on u.id = p."creatorId"
       ${cursorIdx ? `where p."createdAt" < $${cursorIdx}` : ""}
       order by p."createdAt" DESC
       limit $1
@@ -157,7 +159,6 @@ export class PostResolver {
       where: {
         id,
       },
-      relations: { creator: true },
     });
   }
 
