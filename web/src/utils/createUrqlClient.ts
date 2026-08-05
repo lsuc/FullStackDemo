@@ -1,5 +1,5 @@
 import { fetchExchange, gql, ssrExchange } from "urql";
-import { cacheExchange } from "@urql/exchange-graphcache";
+import { cacheExchange, Cache } from "@urql/exchange-graphcache";
 import {
   LogoutMutation,
   MeQuery,
@@ -14,7 +14,6 @@ import { pipe, tap } from "wonka";
 import { Exchange } from "urql";
 import Router from "next/router";
 import { cursorPagination } from "./cursorPagination";
-import { isServer } from "./isServer";
 
 export const errorExchange: Exchange =
   ({ forward }) =>
@@ -28,6 +27,16 @@ export const errorExchange: Exchange =
       }),
     );
   };
+
+function invalidatePosts(cache: Cache) {
+  const allFields = cache.inspectFields("Query");
+  const fieldInfos = allFields.filter((info) => info.fieldName === "posts");
+
+  fieldInfos.forEach((field) => {
+    // Invalidate all cached pagination results on post creation
+    cache.invalidate("Query", "posts", field.arguments);
+  });
+}
 
 export const createUrqlClient = (ssrExchange: any, ctx?: any) => {
   const isServer = !!ctx?.req;
@@ -89,13 +98,7 @@ export const createUrqlClient = (ssrExchange: any, ctx?: any) => {
               }
             },
             createPost: (_result, args, cache, info) => {
-              cache
-                .inspectFields("Query")
-                .filter((field) => field.fieldName === "posts")
-                .forEach((field) => {
-                  // Invalidate all cached pagination results on post creation
-                  cache.invalidate("Query", "posts", field.arguments);
-                });
+              invalidatePosts(cache);
             },
             logout: (_result, args, cache, info) => {
               // me query should return null
@@ -121,6 +124,7 @@ export const createUrqlClient = (ssrExchange: any, ctx?: any) => {
                   }
                 },
               );
+              invalidatePosts(cache);
             },
             register: (_result, args, cache, info) => {
               betterUpdateQuery<RegisterMutation, MeQuery>(

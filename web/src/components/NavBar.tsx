@@ -9,8 +9,10 @@ import NextLink from "next/link";
 import { useMutation, useQuery } from "urql";
 import { MeDocument, LogoutDocument } from "../generated/graphql";
 import { useState, useEffect } from "react";
+import { useRouter } from "next/router";
 
 const NavBar = () => {
+  const router = useRouter();
   const [{ fetching: logoutFetching }, logout] = useMutation(LogoutDocument);
   // This would be rendered on the server because we wrapped index page with NavBar in urql client with SSR: true.
   // We don't want me query to be run on the server (even though that would work since we're forwarding cookie to nextjs server),
@@ -55,8 +57,9 @@ const NavBar = () => {
         </Button>
         <Box mr={2}>{data.me.username}</Box>
         <Button
-          onClick={() => {
-            logout({});
+          onClick={async () => {
+            await logout({});
+            router.reload();
           }}
           isLoading={logoutFetching}
           variant="link"
