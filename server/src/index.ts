@@ -17,6 +17,7 @@ import { Post } from "./entities/Post";
 import path from "path";
 import { Upvote } from "./entities/Upvote";
 import { createUserLoader } from "./utils/createUserLoader";
+import { createUpvoteLoader } from "./utils/createUpvoteLoader";
 
 console.log("dirname: ", __dirname);
 
@@ -88,7 +89,14 @@ const main = async () => {
     const handler = createHandler({
       schema,
       context: (): MyContext => {
-        return { req, res, redis, dataSource, userLoader: createUserLoader() };
+        return {
+          req,
+          res,
+          redis,
+          dataSource,
+          userLoader: createUserLoader(),
+          upvoteLoader: createUpvoteLoader(),
+        };
       },
     });
     handler(req, res, next);
