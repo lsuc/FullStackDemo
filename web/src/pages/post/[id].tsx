@@ -34,7 +34,7 @@ const Post = () => {
       <Box ml="auto">
         <EditDeletePostButtons
           id={data.post.id}
-          creatorId={data.post.creator?.id}
+          creatorId={data.post.creator.id}
         />
       </Box>
     </Layout>
