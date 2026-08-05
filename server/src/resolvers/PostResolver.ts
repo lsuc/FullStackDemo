@@ -46,6 +46,20 @@ export class PostResolver {
     return userLoader.load(post.creatorId);
   }
 
+  @FieldResolver(() => Int, { nullable: true })
+  async voteStatus(
+    @Root() post: Post,
+    @Ctx() { upvoteLoader, req }: MyContext,
+  ) {
+    if (!req.session.userId) {
+      return null;
+    }
+    const upvote = await upvoteLoader.load({
+      postId: post.id,
+      userId: req.session.userId,
+    });
+    return upvote?.value;
+  }
   @Mutation(() => Boolean)
   @UseMiddleware(isAuth)
   async vote(
@@ -107,36 +121,23 @@ export class PostResolver {
   async posts(
     @Arg("limit", () => Int) limit: number,
     @Arg("cursor", () => String, { nullable: true }) cursor: string | null,
-    @Ctx() { req, dataSource }: MyContext,
+    @Ctx() { dataSource }: MyContext,
   ): Promise<PaginatedPosts> {
     //await sleep(3000);
     const realLimit = Math.min(50, limit);
     const realLimitPlusOne = realLimit + 1;
 
     const replacements: any[] = [realLimitPlusOne];
-    let userIdIdx: number | null = null;
-    let cursorIdx: number | null = null;
-
-    if (req.session.userId) {
-      replacements.push(req.session.userId);
-      userIdIdx = replacements.length;
-    }
 
     if (cursor) {
       replacements.push(new Date(parseInt(cursor)));
-      cursorIdx = replacements.length;
     }
 
     const posts = await dataSource.query(
       `
-      select p.*, 
-      ${
-        userIdIdx
-          ? `(select value from upvote where "userId"=$${userIdIdx} and "postId"=p.id) "voteStatus"`
-          : 'null as "voteStatus"'
-      }
+      select p.* 
       from post p
-      ${cursorIdx ? `where p."createdAt" < $${cursorIdx}` : ""}
+      ${cursor ? `where p."createdAt" < $2` : ""}
       order by p."createdAt" DESC
       limit $1
       `,
