@@ -10,7 +10,8 @@
     "start": "node dist/index.js",
     "start2": "ts-node src/index.ts",
     "dev2": "nodemon --exec ts-node src/index.ts",
-    "gen-env": "npx gen-env-types .env -o src/env.d.ts -e ."
+    "gen-env": "npx gen-env-types .env -o src/env.d.ts -e .",
+    "typeorm": "typeorm-ts-node-commonjs"
   },
   "keywords": [],
   "author": "",
