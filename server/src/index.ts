@@ -24,11 +24,7 @@ console.log("dirname: ", __dirname);
 const main = async () => {
   const dataSource = new DataSource({
     type: "postgres",
-    host: "localhost",
-    port: 5432,
-    username: process.env.PG_USER,
-    password: process.env.PG_PASS,
-    database: "lireddit2",
+    url: process.env.DATABASE_URL,
     entities: [User, Post, Upvote],
     migrations: [path.join(__dirname, "./migrations/*")],
     synchronize: true, // no need to run a migration
@@ -58,7 +54,7 @@ const main = async () => {
 
   // Setup cors
   const corsOptions = {
-    origin: process.env.CORS_WHITELIST,
+    origin: process.env.CORS_ORIGIN,
     credentials: true,
   };
   app.use(cors(corsOptions));
@@ -76,6 +72,8 @@ const main = async () => {
         httpOnly: true,
         secure: __prod__, // cookie only works in https
         sameSite: "lax",
+        // Not sure if this will work without a custom domain, so setup a custom domain and use it here
+        domain: __prod__ ? ".mydomain.com" : undefined,
       },
     }),
   );
@@ -102,7 +100,7 @@ const main = async () => {
     handler(req, res, next);
   });
 
-  app.listen(4000, () => {
+  app.listen(process.env.PORT, () => {
     console.log("Server started on localhost:4000");
   });
 };
