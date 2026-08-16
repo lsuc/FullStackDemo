@@ -57,6 +57,7 @@ const main = async () => {
     origin: process.env.CORS_ORIGIN,
     credentials: true,
   };
+  app.set("proxy", 1);
   app.use(cors(corsOptions));
 
   // Initialize sesssion storage.
