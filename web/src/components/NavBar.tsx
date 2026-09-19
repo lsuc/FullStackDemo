@@ -6,14 +6,13 @@ import {
   Heading,
 } from "@chakra-ui/react";
 import NextLink from "next/link";
-import { useMutation, useQuery } from "urql";
 import { MeDocument, LogoutDocument } from "../generated/graphql";
 import { useState, useEffect } from "react";
-import { useRouter } from "next/router";
+import { useApolloClient, useMutation, useQuery } from "@apollo/client/react";
 
 const NavBar = () => {
-  const router = useRouter();
-  const [{ fetching: logoutFetching }, logout] = useMutation(LogoutDocument);
+  const apolloClient = useApolloClient();
+  const [logout, { loading: logoutFetching }] = useMutation(LogoutDocument);
   // This would be rendered on the server because we wrapped index page with NavBar in urql client with SSR: true.
   // We don't want me query to be run on the server (even though that would work since we're forwarding cookie to nextjs server),
   // so we use mounted as a workaround.
@@ -22,9 +21,8 @@ const NavBar = () => {
     setMounted(true);
   }, []);
 
-  const [{ data, fetching }] = useQuery({
-    query: MeDocument,
-    pause: !mounted,
+  const { data, loading } = useQuery(MeDocument, {
+    skip: !mounted,
   });
 
   let body = null;
@@ -33,7 +31,7 @@ const NavBar = () => {
   // prints "data: undefined" with mounted workaround - no query happening on the server anymore
   //console.log("data:", data);
 
-  if (fetching) {
+  if (loading) {
     // data is loading
     return null;
   } else if (!data?.me) {
@@ -59,7 +57,7 @@ const NavBar = () => {
         <Button
           onClick={async () => {
             await logout({});
-            router.reload();
+            await apolloClient.resetStore();
           }}
           isLoading={logoutFetching}
           variant="link"

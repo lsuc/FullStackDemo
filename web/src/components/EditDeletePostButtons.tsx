@@ -2,7 +2,8 @@ import { Box, IconButton } from "@chakra-ui/react";
 import React from "react";
 import { BsPencilSquare, BsTrash } from "react-icons/bs";
 import NextLink from "next/link";
-import { useDeletePostMutation, useMeQuery } from "../generated/graphql";
+import { DeletePostDocument, MeDocument } from "../generated/graphql";
+import { useMutation, useQuery } from "@apollo/client/react";
 
 interface EditDeletePostButtonsProps {
   id: number;
@@ -13,8 +14,8 @@ const EditDeletePostButtons = ({
   id,
   creatorId,
 }: EditDeletePostButtonsProps) => {
-  const [{ data: meData }] = useMeQuery();
-  const [, deletePost] = useDeletePostMutation();
+  const { data: meData } = useQuery(MeDocument);
+  const [deletePost] = useMutation(DeletePostDocument);
   if (meData?.me?.id !== creatorId) {
     return null;
   }
@@ -35,7 +36,7 @@ const EditDeletePostButtons = ({
         icon={<BsTrash />}
         aria-label="Delete post"
         onClick={() => {
-          deletePost({ id });
+          deletePost({ variables: { id } });
         }}
       />
     </Box>

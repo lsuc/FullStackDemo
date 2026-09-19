@@ -6,15 +6,13 @@ import InputField from "../../components/InputField";
 import Wrapper from "../../components/Wrapper";
 import { toErrorMap } from "../../utils/toErrorMap";
 import { ChangePasswordDocument } from "../../generated/graphql";
-import { useMutation } from "urql";
 import { useState } from "react";
-import { withUrqlClient } from "next-urql";
-import { createUrqlClient } from "../../utils/createUrqlClient";
 import NextLink from "next/link";
+import { useMutation } from "@apollo/client/react";
 
 const ChangePassword: NextPage = () => {
   const router = useRouter();
-  const [, changePassword] = useMutation(ChangePasswordDocument);
+  const [changePassword] = useMutation(ChangePasswordDocument);
   const [tokenError, setTokenError] = useState("");
   return (
     <Wrapper variant="small">
@@ -22,9 +20,13 @@ const ChangePassword: NextPage = () => {
         initialValues={{ newPassword: "" }}
         onSubmit={async (values, { setErrors }) => {
           const response = await changePassword({
-            newPassword: values.newPassword,
-            token:
-              typeof router.query.token === "string" ? router.query.token : "",
+            variables: {
+              newPassword: values.newPassword,
+              token:
+                typeof router.query.token === "string"
+                  ? router.query.token
+                  : "",
+            },
           });
           if (response.data?.changePassword.errors) {
             console.log(response);
@@ -72,4 +74,4 @@ const ChangePassword: NextPage = () => {
   );
 };
 
-export default withUrqlClient(createUrqlClient)(ChangePassword);
+export default ChangePassword;

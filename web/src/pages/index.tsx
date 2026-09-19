@@ -1,6 +1,4 @@
-import { withUrqlClient } from "next-urql";
-import { createUrqlClient } from "../utils/createUrqlClient";
-import { usePostsQuery } from "../generated/graphql";
+import { PostsDocument } from "../generated/graphql";
 import Layout from "../components/Layout";
 import {
   Box,
@@ -15,6 +13,7 @@ import NextLink from "next/link";
 import { useState } from "react";
 import UpvoteSection from "../components/UpvoteSection";
 import EditDeletePostButtons from "../components/EditDeletePostButtons";
+import { useQuery } from "@apollo/client/react";
 
 const Index = () => {
   const [variables, setVariables] = useState({
@@ -22,14 +21,14 @@ const Index = () => {
     cursor: null as null | string,
   });
 
-  const [{ data, error, fetching }] = usePostsQuery({
+  const { data, error, loading } = useQuery(PostsDocument, {
     variables: {
       limit: variables.limit,
       cursor: variables.cursor,
     },
   });
 
-  if (!fetching && !data) {
+  if (!loading && !data) {
     return (
       <div>
         <div>Couldn't fetch any posts to show.</div>
@@ -40,7 +39,7 @@ const Index = () => {
 
   return (
     <Layout>
-      {!data && fetching ? (
+      {!data && loading ? (
         <div>loading...</div>
       ) : (
         <Stack spacing={8}>
@@ -86,7 +85,7 @@ const Index = () => {
                 cursor: data.posts.posts[data.posts.posts.length - 1].createdAt,
               })
             }
-            isLoading={fetching}
+            isLoading={loading}
             m="auto"
             my={8}
           >
@@ -98,4 +97,4 @@ const Index = () => {
   );
 };
 
-export default withUrqlClient(createUrqlClient, { ssr: true })(Index);
+export default Index;

@@ -1,7 +1,8 @@
 import { Flex, IconButton, Box } from "@chakra-ui/react";
 import React, { useState } from "react";
 import { BsChevronUp, BsChevronDown } from "react-icons/bs";
-import { PostSnippetFragment, useVoteMutation } from "../generated/graphql";
+import { PostSnippetFragment, VoteDocument } from "../generated/graphql";
+import { useMutation } from "@apollo/client/react";
 
 interface UpvoteSectionProps {
   post: PostSnippetFragment;
@@ -10,7 +11,7 @@ const UpvoteSection = ({ post }: UpvoteSectionProps) => {
   const [loadingState, setLoadingState] = useState<
     "upvote-loading" | "downvote-loading" | "not-loading"
   >("not-loading");
-  const [, vote] = useVoteMutation();
+  const [vote] = useMutation(VoteDocument);
   return (
     <Flex direction="column" align="center" width="40px" mr={4}>
       <IconButton
@@ -20,7 +21,7 @@ const UpvoteSection = ({ post }: UpvoteSectionProps) => {
         onClick={async () => {
           if (post.voteStatus === 1) return;
           setLoadingState("upvote-loading");
-          await vote({ postId: post.id, value: 1 });
+          await vote({ variables: { postId: post.id, value: 1 } });
           setLoadingState("not-loading");
         }}
         isLoading={loadingState === "upvote-loading"}
@@ -35,7 +36,7 @@ const UpvoteSection = ({ post }: UpvoteSectionProps) => {
         onClick={async () => {
           if (post.voteStatus === -1) return;
           setLoadingState("downvote-loading");
-          await vote({ postId: post.id, value: -1 });
+          await vote({ variables: { postId: post.id, value: -1 } });
           setLoadingState("not-loading");
         }}
         isLoading={loadingState === "downvote-loading"}

@@ -22,7 +22,7 @@ const main = async () => {
 
   // TODO in prod do: deployment -> migration:run -> start application
   // Run migration automatically on startup
-  await AppDataSource.runMigrations();
+  // await AppDataSource.runMigrations();
 
   // Initialize redis client.
   const redis = new Redis();

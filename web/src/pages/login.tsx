@@ -2,23 +2,26 @@ import { Form, Formik } from "formik";
 import Wrapper from "../components/Wrapper";
 import InputField from "../components/InputField";
 import { Box, Button, Link as ChakraLink, Flex } from "@chakra-ui/react";
-import { useMutation } from "urql";
 import { LoginDocument } from "../generated/graphql";
 import { toErrorMap } from "../utils/toErrorMap";
 import { useRouter } from "next/router";
-import { withUrqlClient } from "next-urql";
-import { createUrqlClient } from "../utils/createUrqlClient";
 import NextLink from "next/link";
+import { useMutation } from "@apollo/client/react";
 
 const Login = () => {
   const router = useRouter();
-  const [, login] = useMutation(LoginDocument);
+  const [login] = useMutation(LoginDocument);
   return (
     <Wrapper variant="small">
       <Formik
         initialValues={{ usernameOrEmail: "", password: "" }}
         onSubmit={async (values, { setErrors }) => {
-          const response = await login(values);
+          const response = await login({
+            variables: {
+              usernameOrEmail: values.usernameOrEmail,
+              password: values.password,
+            },
+          });
           if (response.data?.login.errors) {
             console.log(response);
             setErrors(toErrorMap(response.data.login.errors));
@@ -70,4 +73,4 @@ const Login = () => {
   );
 };
 
-export default withUrqlClient(createUrqlClient)(Login);
+export default Login;

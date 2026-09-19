@@ -5,10 +5,10 @@ const config: CodegenConfig = {
   schema: "http://localhost:4000/graphql",
   documents: "src/graphql/**/*.graphql",
   generates: {
-    "src/generated/graphql.ts": {
-      plugins: ["typescript", "typescript-operations", "typescript-urql"],
-      config: {
-        useTypeImports: true,
+    "src/generated/": {
+      preset: "client",
+      plugins: [],
+      presetConfig: {
         fragmentMasking: false,
       },
     },
