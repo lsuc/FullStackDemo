@@ -11,37 +11,18 @@ import RedisStore from "connect-redis";
 import Redis from "ioredis";
 import session from "express-session";
 import cors from "cors";
-import { DataSource } from "typeorm";
-import { User } from "./entities/User";
-import { Post } from "./entities/Post";
-import path from "path";
-import { Upvote } from "./entities/Upvote";
 import { createUserLoader } from "./utils/createUserLoader";
 import { createUpvoteLoader } from "./utils/createUpvoteLoader";
+import { AppDataSource } from "./data-source";
 
 console.log("dirname: ", __dirname);
 
 const main = async () => {
-  const dataSource = new DataSource({
-    type: "postgres",
-    host: "localhost",
-    port: 5432,
-    username: process.env.PG_USER,
-    password: process.env.PG_PASS,
-    database: "lireddit2",
-    entities: [User, Post, Upvote],
-    migrations: [path.join(__dirname, "./migrations/*")],
-    synchronize: true, // no need to run a migration
-    logging: true,
-  });
+  await AppDataSource.initialize();
 
-  await dataSource.initialize();
-
+  // TODO in prod do: deployment -> migration:run -> start application
   // Run migration automatically on startup
-  await dataSource.runMigrations();
-
-  // Manually clear database
-  // await Post.clear();
+  await AppDataSource.runMigrations();
 
   // Initialize redis client.
   const redis = new Redis();
@@ -58,9 +39,10 @@ const main = async () => {
 
   // Setup cors
   const corsOptions = {
-    origin: process.env.CORS_WHITELIST,
+    origin: process.env.CORS_ORIGIN,
     credentials: true,
   };
+  app.set("proxy", 1);
   app.use(cors(corsOptions));
 
   // Initialize sesssion storage.
@@ -76,6 +58,8 @@ const main = async () => {
         httpOnly: true,
         secure: __prod__, // cookie only works in https
         sameSite: "lax",
+        // Not sure if this will work without a custom domain, so setup a custom domain and use it here
+        domain: __prod__ ? ".mydomain.com" : undefined,
       },
     }),
   );
@@ -93,7 +77,7 @@ const main = async () => {
           req,
           res,
           redis,
-          dataSource,
+          dataSource: AppDataSource,
           userLoader: createUserLoader(),
           upvoteLoader: createUpvoteLoader(),
         };
@@ -102,7 +86,7 @@ const main = async () => {
     handler(req, res, next);
   });
 
-  app.listen(4000, () => {
+  app.listen(process.env.PORT, () => {
     console.log("Server started on localhost:4000");
   });
 };
