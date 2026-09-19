@@ -41,7 +41,7 @@ function invalidatePosts(cache: Cache) {
 export const createUrqlClient = (ssrExchange: any, ctx?: any) => {
   const isServer = !!ctx?.req;
   return {
-    url: "http://localhost:4000/graphql",
+    url: process.env.NEXT_PUBLIC_API_URL,
     fetchOptions: {
       credentials: "include" as const,
       headers: isServer ? ctx.req.headers : undefined,
