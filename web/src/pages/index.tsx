@@ -1,4 +1,4 @@
-import { PostsDocument } from "../generated/graphql";
+import { PostsDocument, PostsQuery } from "../generated/graphql";
 import Layout from "../components/Layout";
 import {
   Box,
@@ -10,23 +10,20 @@ import {
   Text,
 } from "@chakra-ui/react";
 import NextLink from "next/link";
-import { useState } from "react";
 import UpvoteSection from "../components/UpvoteSection";
 import EditDeletePostButtons from "../components/EditDeletePostButtons";
 import { useQuery } from "@apollo/client/react";
+import { NetworkStatus } from "@apollo/client";
 
 const Index = () => {
-  const [variables, setVariables] = useState({
-    limit: 20,
-    cursor: null as null | string,
-  });
-
-  const { data, error, loading } = useQuery(PostsDocument, {
-    variables: {
-      limit: variables.limit,
-      cursor: variables.cursor,
-    },
-  });
+  const { data, error, loading, fetchMore, variables, networkStatus } =
+    useQuery(PostsDocument, {
+      variables: {
+        limit: 15,
+        cursor: null,
+      },
+      notifyOnNetworkStatusChange: true,
+    });
 
   if (!loading && !data) {
     return (
@@ -80,12 +77,15 @@ const Index = () => {
         <Flex>
           <Button
             onClick={() =>
-              setVariables({
-                limit: variables.limit,
-                cursor: data.posts.posts[data.posts.posts.length - 1].createdAt,
+              fetchMore({
+                variables: {
+                  limit: variables?.limit,
+                  cursor:
+                    data?.posts.posts[data.posts.posts.length - 1]?.createdAt,
+                },
               })
             }
-            isLoading={loading}
+            isLoading={networkStatus === NetworkStatus.fetchMore}
             m="auto"
             my={8}
           >
